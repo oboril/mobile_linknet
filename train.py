@@ -5,7 +5,7 @@ images = "fib1_1.jpg fib1_2.jpg fib1_3.jpg img1.jpg msc_1.jpg pH_1.jpg pH_2.jpg 
 dataset = ml.load_dataset("images/train/",["images/cells/","images/nuclei/"], images,(96*4,96*3))
 
 augmented = dataset.repeat(8).map(ml.augment).shuffle(64).batch(32, drop_remainder=True)
-dataset = dataset.batch(1)
+dataset = dataset.map(lambda i,l: (ml.preprocess_input(i),l)).batch(1)
 
 model = ml.Mobile_LinkNet_SAM()
 
