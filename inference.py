@@ -2,16 +2,16 @@ import mobile_linknet as ml
 from matplotlib import pyplot as plt
 
 # open image
-image = "images/train/msc_3.jpg"
-image = ml.utils.open_image(image, size=[128*4,128*3])
+image = "images/train/simone_1.tif"
+image = ml.utils.open_image(image, size=[96*4,96*3])
 
 # load model
-model = ml.Mobile_LinkNet_SAM(load_saved="trained_model.h5")
+model = ml.Mobile_LinkNet_SAM(load_saved="checkpoint.h5")
 
 # run prediction
 predicted = ml.postprocessing.get_prediction(model, image)
 
-cells, masks = ml.postprocessing.segment_cells(predicted)
+cells, masks = ml.postprocessing.segment_cells(predicted, cells_smoothing_sigma=0.01)
 
 overlay = ml.postprocessing.overlay_segmentation_masks(image/255, masks)
 

@@ -11,7 +11,7 @@ AUGMENTATION_CONFIG= {
     "hue_max_delta": 0.1,
     "brightness_max_delta": 0.7,
     "contrast_max_delta": 0.7,
-    "sharpness_factor": 5.,
+    "sharpness_factor": 2.,
     "noise": 5,
     "random_background_sigma": 5.,
     "random_background_coeff": 0.3
