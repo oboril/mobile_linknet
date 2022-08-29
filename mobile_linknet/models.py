@@ -159,3 +159,7 @@ class Mobile_LinkNet_SAM(tf.keras.Model):
             ])
         )
         return norm
+
+    @tf.function
+    def call(self, image):
+        return self.linknet_model.call(image)
