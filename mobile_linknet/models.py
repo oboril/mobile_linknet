@@ -92,7 +92,7 @@ def raw_mobile_linknet(input_shape=None):
 
     for layer in model.layers:
         if isinstance(layer, BatchNormalization):
-            layer.momentum=0.9
+            layer.momentum=0.95
 
     return model
 
