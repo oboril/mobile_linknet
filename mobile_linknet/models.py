@@ -109,7 +109,7 @@ class Mobile_LinkNet_SAM(tf.keras.Model):
             self.linknet_model = tf.keras.models.load_model(load_saved)
         self.rho = rho
 
-    def save(self,filename):
+    def save(self,filename,*args,**kwargs):
         self.linknet_model.save(filename)
 
     @tf.function

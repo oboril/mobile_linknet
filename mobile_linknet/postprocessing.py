@@ -63,13 +63,16 @@ def segment_cells(predicted, distance_threshold=1., prob_threshold=0.5, cells_sm
     return peaks, labels
 
 def overlay_segmentation_masks(image, labels, opacity=0.5):
-    hues = [20,40,60,80,100,120,140,160,180,200]
-    colors = [hsv2rgb([hue, 255, 255]) for hue in hues]
+    colors = [hsv2rgb([hue, 1., 1.]) for hue in np.linspace(0.,1.,10,endpoint=False)]
+    labels = labels.astype(int)
 
-    def map_color(image, label):
-        if label == 0:
-            return image
-        else:
-            return image*(1-opacity) + colors[label%len(colors)]*opacity
+    hue = (labels%10)/10
+    ones = np.ones(hue.shape)
+    hsv = np.stack([hue, ones, ones], axis=2)
 
-    return np.vectorize(map_color)(image,labels)
+    overlay = hsv2rgb(hsv)
+
+    overlay_mask = np.where(labels == 0, 0, opacity)
+    image_mask = np.where(labels == 0, 1., 1.-opacity)
+
+    return (overlay.transpose(2,0,1)*overlay_mask + image.transpose(2,0,1)*image_mask).transpose(1,2,0)
