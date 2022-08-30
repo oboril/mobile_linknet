@@ -199,12 +199,19 @@ class Mobile_LinkNet_SAM(tf.keras.Model):
     def test_step(self, data):
         (images, labels) = data
         predictions = self.linknet_model(images, training=False)
-        metrics = {"val_"+key: m(labels, predictions) for key,val in self.my_metrics}
+        metrics = {"val_"+key: m(labels, predictions) for key,m in self.my_metrics.items()}
         return metrics
 
-    @tf.function
-    def test_all(self, dataset):
-        return 0
+    def test_all(self, test_data):
+        metrics = {}
+        test_count = 0.
+        for images, labels in test_data:
+            batch_size = float(len(images))
+            test_count += batch_size
+            m = self.test_step([images,labels])
+            metrics = {key:val*batch_size + (metrics[key] if key in metrics else 0) for key,val in m.items()}
+        metrics = {key: val/test_count for key,val in metrics.items()}
+        return metrics
 
     @tf.function
     def _grad_norm(self, gradients):
