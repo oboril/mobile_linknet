@@ -109,69 +109,102 @@ class Mobile_LinkNet_SAM(tf.keras.Model):
             self.linknet_model = tf.keras.models.load_model(load_saved)
         self.rho = rho
     
-        self.accumulated_gradients = [tf.Variable(var*0.) for var in self.linknet_model.trainable_variables]
+        self.accumulated_gradients = [tf.Variable(var*0., trainable=False) for var in self.linknet_model.trainable_variables]
+        self.accumulated_gradients_count = tf.Variable(0., trainable=False)
 
     def save(self,filename,*args,**kwargs):
-        self.linknet_model.save(filename)
+        try:
+            self.linknet_model.save(filename)
+        except Exception as ex:
+            print("Saving failed,",ex)
+
+    def compile(self,optimizer,loss,metrics):
+        self.my_optimizer = optimizer
+        self.my_loss = loss
+        self.my_metrics = metrics
+        self.my_metrics["loss"] = self.my_loss
 
     @tf.function
-    def get_averaged_gradients(self, images,labels):
-        for g in self.accumulated_gradients:
-            g.assign(g*0.)
-        
-        count = 0.
-
-        for image,label in zip(tf.unstack(images), tf.unstack(labels)):
-            count += 1.
-            with tf.GradientTape() as tape:
-                prediction = self.linknet_model(image)
-                loss = self.compiled_loss(label, prediction)
-
-            gradient = tape.gradient(loss, self.linknet_model.trainable_variables)
-
-            for g, accum in zip(gradient, self.accumulated_gradients):
-                accum.assign_add(g)
-        
-        for g in self.accumulated_gradients:
-            g.assign(g/count)
-
-        return self.accumulated_gradients
-        
-    @tf.function
-    def train_step(self, data):
+    def add_gradient(self, data):
         (images, labels) = data
 
-        e_ws = []
+        with tf.GradientTape() as tape:
+            predictions = self.linknet_model(images)
+            loss = self.my_loss(labels, predictions)
 
-        gradients = self.get_averaged_gradients(images,labels)
+        gradients = tape.gradient(loss, self.linknet_model.trainable_variables)
+
+        for g, accum in zip(gradients, self.accumulated_gradients):
+            accum.assign_add(g)
+        
+        self.accumulated_gradients_count.assign_add(1.)
+
+        return loss
+
+    @tf.function
+    def apply_gradients(self):      
+        for grad in self.accumulated_gradients:
+            grad.assign(grad/self.accumulated_gradients_count)
+        
+        self.my_optimizer.apply_gradients(
+            zip(self.accumulated_gradients, self.linknet_model.trainable_variables)
+        )
+
+        for grad in self.accumulated_gradients:
+            grad.assign(grad*0.)
+
+        self.accumulated_gradients_count.assign(0)
+        
+    @tf.function
+    def add_gradient_SAM(self, data):
+        (images, labels) = data
+
+        # Calculate e_w
+        with tf.GradientTape() as tape:
+            predictions = self.linknet_model(images)
+            loss = self.my_loss(labels, predictions)
+
+        gradients = tape.gradient(loss, self.linknet_model.trainable_variables)
 
         grad_norm = self._grad_norm(gradients)
         scale = self.rho / (grad_norm + 1e-12)
 
+        # Adjust model weights against gradient
+        e_ws = []
         for (grad, param) in zip(gradients, self.linknet_model.trainable_variables):
             e_w = grad * scale
             param.assign_add(e_w)
             e_ws.append(e_w)
 
-        sam_gradients = self.get_averaged_gradients(images,labels)
+        # Get new gradient
+        with tf.GradientTape() as tape:
+            predictions = self.linknet_model(images)
+            loss = self.my_loss(labels, predictions)
 
+        gradients = tape.gradient(loss, self.linknet_model.trainable_variables)
+
+        # Restore weights
         for (param, e_w) in zip(self.linknet_model.trainable_variables, e_ws):
             param.assign_sub(e_w)
         
+        # Accumulate gradient
+        for g, accum in zip(gradients, self.accumulated_gradients):
+            accum.assign_add(g)
         
-        self.optimizer.apply_gradients(
-            zip(sam_gradients, self.linknet_model.trainable_variables))
-        
-        #self.compiled_metrics.update_state(label, prediction)
-        return {m.name: m.result() for m in self.metrics}
+        self.accumulated_gradients_count.assign_add(1.)
+
+        return loss
 
     @tf.function
     def test_step(self, data):
         (images, labels) = data
         predictions = self.linknet_model(images, training=False)
-        loss = self.compiled_loss(labels, predictions)
-        self.compiled_metrics.update_state(labels, predictions)
-        return {m.name: m.result() for m in self.metrics}
+        metrics = {"val_"+key: m(labels, predictions) for key,val in self.my_metrics}
+        return metrics
+
+    @tf.function
+    def test_all(self, dataset):
+        return 0
 
     @tf.function
     def _grad_norm(self, gradients):

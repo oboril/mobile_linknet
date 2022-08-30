@@ -14,9 +14,16 @@ def get_prediction(model, image):
     return prediction
 
 def prediction_to_rgb(predicted):
-    cells = predicted[:,:,0]
-    nuclei = predicted[:,:,1]
-    return np.array([cells-nuclei, nuclei, nuclei*0]).transpose(1,2,0)
+    if len(predicted.shape) == 3:
+        cells = predicted[:,:,0]
+        nuclei = predicted[:,:,1]
+        return np.array([cells-nuclei, nuclei, nuclei*0]).transpose(1,2,0)
+    elif len(predicted.shape) == 4:
+        cells = predicted[:,:,:,0]
+        nuclei = predicted[:,:,:,1]
+        return np.array([cells-nuclei, nuclei, nuclei*0]).transpose(1,2,3,0)
+    else:
+        raise Exception("Invalid input shape")
 
 def get_cell_centers(predicted, distance_threshold=1., prob_threshold=0.5):
     """
