@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Cell Segmentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Jan Oboril">
+    <link rel="stylesheet" href="{{url_for('static', filename='index.css')}}">
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="{{url_for('static', filename='index.js')}}"></script>
+</head>
+
+<body>
+
+    <header><h1>Cell Segmentation Demo</h1></header>
+
+    <div id="content">
+
+        <div id="image-container">
+            <div id="images">
+                <label for="upload-image" id="upload-image-label">
+                    <input type="file" id="upload-image" accept=".tif,.tiff,.jpg,.png">
+                    <span>Choose an image<br>or drag it here</span>
+                </label>
+
+                <img src="" alt="" hidden id="raw-image">
+
+                <img src="" alt="" hidden id="image-masks">
+                <img src="" alt="" hidden id="image-centers">
+
+            </div>
+            <div id="image-controls">
+                <div id="image-display-controls">
+                    <h3 class="span2">Display</h3>
+    
+                    <input type="checkbox" id="show-centers" checked>
+                    <label for="show-centers">Show cell centers</label>
+    
+                    <input type="checkbox" id="show-masks" checked>
+                    <label for="show-masks">Show segmented masks</label>
+    
+                    <label class="span2" for="masks-opacity">Masks opacity:</label>
+                    <input class="span2" type="range" min="0" max="100" value="50" id="masks-opacity">
+                </div>
+                <div id="image-data">
+                    <h3 class="span2">Data</h3>
+
+                    <span>File:</span>
+                    <span id="image-file-name"></span>
+
+                    <span>Cells:</span>
+                    <span id="data-cell-count"></span>
+
+                    <span>Confluency:</span>
+                    <span id="data-confluency"></span>
+
+                    <label for="input-image-width">Image width (&mu;m)</label>
+                    <input type="number" id="input-image-width" value="1200">
+                </div>
+            </div>
+        </div>
+        <div id="results">
+            <table id="results-table">
+            </table>
+        </div>
+
+        <div id="plot-options">
+            <span>Plot</span>
+            <select name="" id="select-x">
+                <option value="area" selected>Area</option>
+                <option value="eccentricity">Eccentricity</option>
+                <option value="orientation">Orientation</option>
+                <option value="minor_axis">Short axis</option>
+                <option value="major_axis">Long axis</option>
+            </select>
+            <span>vs</span>
+            <select name="" id="select-y">
+                <option value="area">Area</option>
+                <option value="eccentricity">Eccentricity</option>
+                <option value="orientation" selected>Orientation</option>
+                <option value="minor_axis">Short axis</option>
+                <option value="major_axis">Long axis</option>
+            </select>
+
+        </div>
+
+        <div id="plot">
+
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Jan Oboril, 2022<br>jan.oboril@gmail.com</p>
+    </footer>
+
+</body>
+
+</html>
