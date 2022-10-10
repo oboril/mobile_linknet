@@ -32,6 +32,3 @@ I don't think there will be much need to modify the mobile_linknet library, exce
     - tweaking the model, namely changing the number of output channels (for example adding a channel to detect dead cells)
 
 If you are changing the output layers of the model, you need to carefully choose the activation function and make sure that the loss function is appropriate.
-
-
-This code should not be leaked outside of BeneMeat
