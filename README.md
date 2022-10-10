@@ -1,5 +1,6 @@
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 # Mobile LinkNet
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 This repository contains an implementation of Mobile LinkNet model which can be used for efficient image segmentation.
 
 More information can be found here: [janoboril.pythonanywhere.com/cell-segmentation](https://janoboril.pythonanywhere.com/cell-segmentation)
