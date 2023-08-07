@@ -32,7 +32,7 @@ def raw_mobile_linknet(input_shape=None):
         project_BN = BatchNormalization(name=name+"_project_BN")(project)
 
         if residual_conv:
-            residual_conv = Conv2D(projected_channels, (1,1), name=name+"_residual_conv")(project_BN)
+            residual_conv = Conv2D(projected_channels, (1,1), name=name+"_residual_conv")(input_tensor)
             residual_add = Add(name=name+"_residual_add")([project_BN,residual_conv])
         else:
             residual_add = Add(name=name+"_residual_add")([project_BN,input_tensor])
